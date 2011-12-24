@@ -24,9 +24,9 @@
 
 (defun add-cds ()
   (loop (add-record (prompt-for-cd))
-      (if (not (y-or-n-p "Another? [y/n]: ")) (save-and-return))))
+      (if (not (y-or-n-p "Another? [y/n]: ")) (save-and-quit))))
 
-(defun save-and-return ()
+(defun save-and-quit ()
   (save-db *file*)
   (quit))
 
@@ -49,4 +49,3 @@
 
 (add-cds)
 (dump-db)
-
