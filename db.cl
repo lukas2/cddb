@@ -3,6 +3,13 @@
 
 (defun add-record (cd) (push cd *db*))
 
+(defun add-record-unless-exists (cd)
+  (if (select (where :rating (getf cd :rating) :artist (getf cd :artist) :title (getf cd :title) :ripped (getf cd :ripped)))
+    ()
+    (add-record cd )
+    )
+  )
+
 (defun make-cd ( title artist rating ripped )
   (list :title title :artist artist :rating rating :ripped ripped))
 
@@ -42,10 +49,25 @@
     (with-standard-io-syntax
       (setf *db* (read in)))))
 
+(defun select (selector-fn)
+  (remove-if-not selector-fn *db*))
 
-(add-record (make-cd "Achtung, Baby!" "U2" 8 nil ))
-(add-record (make-cd "Dangerous" "Michael Jackson" 8 t))
-(add-record (make-cd "Automatic for the people" "R.E.M." 9 t))
+(defun where (&key title artist rating (ripped nil ripped-p))
+  #'(lambda (cd)
+      (and
+       (if title    (equal (getf cd :title)  title)  t)
+       (if artist   (equal (getf cd :artist) artist) t)
+       (if rating   (equal (getf cd :rating) rating) t)
+       (if ripped-p (equal (getf cd :ripped) ripped) t))))
+
+(load-db *file*)
+
+; seed data
+(add-record-unless-exists (make-cd "Achtung, Baby!" "U2" 8 nil ))
+(add-record-unless-exists (make-cd "Dangerous" "Michael Jackson" 8 t))
+(add-record-unless-exists (make-cd "Automatic for the people" "R.E.M." 9 t))
+
+; (print (select (where :rating 9 )))
 
 (add-cds)
 (dump-db)
