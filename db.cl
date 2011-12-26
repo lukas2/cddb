@@ -52,6 +52,17 @@
 (defun select (selector-fn)
   (remove-if-not selector-fn *db*))
 
+(defun update (selector-fn &key title artist rating (ripped nil ripped-p))
+  (setf *db*
+        (mapcar
+         #'(lambda (row)
+             (when (funcall selector-fn row)
+               (if title    (setf (getf row :title) title))
+               (if artist   (setf (getf row :artist) artist))
+               (if rating   (setf (getf row :rating) rating))
+               (if ripped-p (setf (getf row :ripped) ripped)))
+             row) *db*)))
+
 (defun where (&key title artist rating (ripped nil ripped-p))
   #'(lambda (cd)
       (and
@@ -60,6 +71,9 @@
        (if rating   (equal (getf cd :rating) rating) t)
        (if ripped-p (equal (getf cd :ripped) ripped) t))))
 
+(defun delete-rows (selector-fn)
+  (setf *db* (remove-if selector-fn *db*)))
+
 (load-db *file*)
 
 ; seed data
@@ -67,6 +81,7 @@
 (add-record-unless-exists (make-cd "Dangerous" "Michael Jackson" 8 t))
 (add-record-unless-exists (make-cd "Automatic for the people" "R.E.M." 9 t))
 
+; (update (where :artist "U2") :rating 11)
 ; (print (select (where :rating 9 )))
 
 (add-cds)
